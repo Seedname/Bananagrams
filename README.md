@@ -1,5 +1,5 @@
 # Bananagrammer  
-#### _The Aristocrat Monoalphabetic Substitution Cipher Destroyer_  
+## _The Aristocrat Monoalphabetic Substitution Cipher Destroyer_  
 ## Usage  
 Put enciphered string in message.txt, then run decrypt.py. The key will be printed to the console, and the deciphered message is written to correct.txt.  
 ##### Other Languages  
