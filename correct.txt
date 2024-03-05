@@ -1,10 +1,10 @@
-But, how would a person solve the message not knowing the key? Solving
-the message not knowing the key is called cryptanalysis. Cryptanalysts
-take up the "implied challenged to the ingenuity" that is tossed down by
-secret writing, and they find, when successful, satisfaction of their "not
-uncommon desire to discover a secret."
-If the cryptanalyst knew that the method of encryption were simple
-substitution cipher, then the cryptanalyst could try all possible keys to solve
-the message. Or, maybe not! How many keys are possible? How long
-would it take to try them all?
-Ok, so it is not a good idea to try to solve one of these by brute force.
+valiship
+pyromotor
+overfancy
+turtlers
+analogion
+hoecakes
+crammers
+brazenfaced
+detecter
+extraterrene

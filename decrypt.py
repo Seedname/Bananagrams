@@ -1,18 +1,18 @@
-dictionary = {}
+import time
+
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
-with open('dictionary.txt', 'r') as f:
-    for pair in f.readlines():
-        pattern, word = pair.strip().split(" ")
-        if not dictionary.get(pattern):
-            dictionary[pattern] = []
-        dictionary[pattern].append(word)
+def isalpha(str):
+    for letter in str:
+        if letter.lower() not in ALPHABET:
+            return False
+    return True
 
 message = []
 with open('message.txt', 'r') as f:    
     for line in f.readlines():
         for word in line.strip().split(" "):
-            message.append((''.join(filter(str.isalpha, word))).lower().rstrip())
+            message.append((''.join(filter(isalpha, word))).lower().rstrip())
 message = [word for word in list(set(message)) if word]
 
 def get_mapping(word):
@@ -38,22 +38,22 @@ def all_mappings(word):
         mapping = {value: key for key, value in get_mapping(other_word).items()}
         for i in range(len(word)):
             total_mapping[word[i]].append(mapping[pattern[i]])
-    total_mapping = {letter: list(set(mappings)) for letter, mappings in total_mapping.items()}
+    total_mapping = {letter: set(mappings) for letter, mappings in total_mapping.items()}
     return total_mapping
 
 def cull_extras(possible_keys):
     confirmed = ""
     for mapping in possible_keys:
         if len(possible_keys[mapping]) == 1:
-            confirmed += possible_keys[mapping][0]
+            confirmed += list(possible_keys[mapping])[0]
 
     for mapping in possible_keys:
         if len(possible_keys[mapping]) > 1:
             new_mapping = []
-            for letter in possible_keys[mapping]:
+            for letter in list(possible_keys[mapping]):
                 if letter not in confirmed:
                     new_mapping.append(letter)
-            possible_keys[mapping] = new_mapping
+            possible_keys[mapping] = set(new_mapping)
 
     return possible_keys
 
@@ -99,7 +99,9 @@ def decrypt_word(word, key):
     return new_word
 
 def brute_force(keyspace, message):
+    start_time = time.time()
     keyspace = generate_keystrings(keyspace)
+
     for i in range(len(keyspace)):
         key = keyspace[i]
         for word in message:
@@ -109,27 +111,61 @@ def brute_force(keyspace, message):
             if decrypted_word not in dictionary[pattern]:
                 break
         else:
+            print(f"Valid key found after {i+1:,} searches!")
             return key
-        print(f'{i+1:,}/{len(keyspace):,} keys tested')
+        if i % 10000 == 0:
+            if i > 0:
+                elapsed_time = time.time() - start_time
+                remaining_time = (elapsed_time / i) * (len(keyspace) - i)
+                if remaining_time > 60:
+                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i+1)/len(keyspace):.2f}%) -- {remaining_time/60:.2f} minutes remaining")
+                else:
+                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i+1)/len(keyspace):.2f}%) -- {remaining_time:.2f} seconds remaining")
+            else:
+                print(f"Brute Forcing Keyspace of {len(keyspace):,} keys...")
 
+# def invert_key(reciprocal_key):
+#     original_key = ""
+#     for letter in reciprocal_key:
+#         original_key += reciprocal_key[ALPHABET.index(letter)]
+#     return original_key
 
-possible_keys = {letter: [l for l in ALPHABET] for letter in ALPHABET}
-for word in message:
-    word_mappings = all_mappings(word)
-    if not word_mappings: continue
-    for letter in word_mappings:
-        possible_keys[letter] = list(set(possible_keys[letter]) & set(word_mappings[letter]))
-    possible_keys = cull_extras(possible_keys)
-    keyspace_size = count_all_keys(possible_keys)
-    print(f'{keyspace_size:,} possible keys (with overlaps)')
+if __name__ == "__main__":
+    dictionary = {}
+    print("Creating Dictionary...")
+    with open('dictionary.txt', 'r') as f:
+        for pair in f.readlines():
+            pattern, word = pair.strip().split(" ")
+            if not dictionary.get(pattern):
+                dictionary[pattern] = []
+            dictionary[pattern].append(word)
 
-    if keyspace_size == 1:
-        key = ''.join([possible_keys[mapping][0] for mapping in possible_keys])
-        print(f'{key = }')
-        decrypt(key)
-        break
-else:
-    key = brute_force(possible_keys, message)
-    print(f'{key = }')
-    decrypt(key)
-    pass
+    possible_keys = {letter: set([l for l in ALPHABET]) for letter in ALPHABET}
+    print("Narrowing Keyspace...")
+    for word in message:
+        word_mappings = all_mappings(word)
+        if not word_mappings: continue
+        for letter in word_mappings:
+            possible_keys[letter] = possible_keys[letter] & word_mappings[letter]
+
+        possible_keys = cull_extras(possible_keys)
+        keyspace_size = count_all_keys(possible_keys)
+
+        if keyspace_size == 1:
+            reciprocal_key = ''.join([list(possible_keys[mapping])[0] for mapping in possible_keys])
+            # original_key = invert_key(reciprocal_key)
+            print("Absolute key found!")
+            print(f'{reciprocal_key = }')
+            # print(f'{original_key = }')
+            print("Translating message...")
+            decrypt(reciprocal_key)
+            break
+    else:
+        # possible_keys = cull_extras(possible_keys)
+        print(f"Generating Keystrings from {keyspace_size:,} possible keys...")
+        reciprocal_key = brute_force(possible_keys, message)
+        # original_key = invert_key(reciprocal_key)
+        print(f'{reciprocal_key = }')
+        # print(f'{original_key = }')
+        print("Translating message...")
+        decrypt(reciprocal_key)
