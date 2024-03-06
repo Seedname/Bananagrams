@@ -8,13 +8,6 @@ def isalpha(str):
             return False
     return True
 
-message = []
-with open('message.txt', 'r') as f:    
-    for line in f.readlines():
-        for word in line.strip().split(" "):
-            message.append((''.join(filter(isalpha, word))).lower().rstrip())
-message = [word for word in list(set(message)) if word]
-
 def get_mapping(word):
     mapping = {}
     for letter in word:
@@ -103,6 +96,16 @@ def brute_force(keyspace, message):
     keyspace = generate_keystrings(keyspace)
 
     for i in range(len(keyspace)):
+        if i % 10000 == 0:
+            if i > 0:
+                elapsed_time = time.time() - start_time
+                remaining_time = (elapsed_time / i) * (len(keyspace) - i)
+                if remaining_time > 60:
+                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i)/len(keyspace):.2f}%) -- {remaining_time/60:.2f} minutes remaining")
+                else:
+                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i)/len(keyspace):.2f}%) -- {remaining_time:.2f} seconds remaining")
+            else:
+                print(f"Brute Forcing Keyspace of {len(keyspace):,} keys...")
         key = keyspace[i]
         for word in message:
             pattern = get_pattern(word)
@@ -113,16 +116,6 @@ def brute_force(keyspace, message):
         else:
             print(f"Valid key found after {i+1:,} searches!")
             return key
-        if i % 10000 == 0:
-            if i > 0:
-                elapsed_time = time.time() - start_time
-                remaining_time = (elapsed_time / i) * (len(keyspace) - i)
-                if remaining_time > 60:
-                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i+1)/len(keyspace):.2f}%) -- {remaining_time/60:.2f} minutes remaining")
-                else:
-                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i+1)/len(keyspace):.2f}%) -- {remaining_time:.2f} seconds remaining")
-            else:
-                print(f"Brute Forcing Keyspace of {len(keyspace):,} keys...")
 
 # def invert_key(reciprocal_key):
 #     original_key = ""
@@ -139,6 +132,14 @@ if __name__ == "__main__":
             if not dictionary.get(pattern):
                 dictionary[pattern] = []
             dictionary[pattern].append(word)
+
+    message = []
+    print("Reading message...")
+    with open('message.txt', 'r') as f:    
+        for line in f.readlines():
+            for word in line.strip().split(" "):
+                message.append((''.join(filter(isalpha, word))).lower().rstrip())
+    message = [word for word in list(set(message)) if word]
 
     possible_keys = {letter: set([l for l in ALPHABET]) for letter in ALPHABET}
     print("Narrowing Keyspace...")
@@ -164,8 +165,12 @@ if __name__ == "__main__":
         # possible_keys = cull_extras(possible_keys)
         print(f"Generating Keystrings from {keyspace_size:,} possible keys...")
         reciprocal_key = brute_force(possible_keys, message)
-        # original_key = invert_key(reciprocal_key)
-        print(f'{reciprocal_key = }')
-        # print(f'{original_key = }')
-        print("Translating message...")
-        decrypt(reciprocal_key)
+        if reciprocal_key:
+            # original_key = invert_key(reciprocal_key)
+            print(f'{reciprocal_key = }')
+            # print(f'{original_key = }')
+            print("Translating message...")
+            decrypt(reciprocal_key)
+        else:
+            print("No key found ):")
+            print("There is likely at least one word in your message that is not part of the dictionary.")
