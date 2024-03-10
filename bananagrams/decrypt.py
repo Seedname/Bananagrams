@@ -3,8 +3,8 @@ import time
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
 def isalpha(str):
-    for letter in str:
-        if letter.lower() not in ALPHABET:
+    for letter in str.lower():
+        if letter not in ALPHABET:
             return False
     return True
 
@@ -58,8 +58,8 @@ def count_all_keys(possible_keys):
 
 def decrypt(key):
     new_message = ""
-    correct = open('correct.txt', 'w')
-    with open('message.txt', 'r') as f:
+    correct = open('bananagrams/correct.txt', 'w')
+    with open('bananagrams/message.txt', 'r') as f:
         lines = f.readlines()
         for line in lines:
             for letter in line:
@@ -126,7 +126,7 @@ def brute_force(keyspace, message):
 if __name__ == "__main__":
     dictionary = {}
     print("Creating Dictionary...")
-    with open('dictionary.txt', 'r') as f:
+    with open('bananagrams/dictionary.txt', 'r') as f:
         for pair in f.readlines():
             pattern, word = pair.strip().split(" ")
             if not dictionary.get(pattern):
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
     message = []
     print("Reading message...")
-    with open('message.txt', 'r') as f:    
+    with open('bananagrams/message.txt', 'r') as f:    
         for line in f.readlines():
             for word in line.strip().split(" "):
                 message.append((''.join(filter(isalpha, word))).lower().rstrip())
