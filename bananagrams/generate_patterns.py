@@ -1,5 +1,5 @@
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
-f = open('no_pattern.txt', 'r')
+f = open('bananagrams/no_pattern.txt', 'r')
 lines = [line.strip().lower() for line in f.readlines()]
 f.close()
 
@@ -15,6 +15,6 @@ def get_pattern(word):
 
     return pattern
 
-with open('dictionary.txt', 'w') as f:
+with open('bananagrams/dictionary.txt', 'w') as f:
     for word in lines:
         f.write(f'{get_pattern(word)} {word}\n')

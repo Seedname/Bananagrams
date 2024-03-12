@@ -1,40 +1,59 @@
 import time
 
-ALPHABET = "abcdefghijklmnopqrstuvwxyz"
+def create_dictionary(file_path: str) -> dict:
+    dictionary = {}
+    print(f"Creating Dictionary from {file_path}...")
+    with open(file_path, 'r') as f:
+        for pair in f.readlines():
+            pattern, word = pair.strip().split(" ")
+            if not dictionary.get(pattern):
+                dictionary[pattern] = []
+            dictionary[pattern].append(word)
+    return dictionary
 
-def isalpha(str):
-    for letter in str.lower():
-        if letter not in ALPHABET:
-            return False
-    return True
+def read_message(file_path: str, alphabet: str) -> list[str]:
+    message = []
+    print(f"Reading message from {file_path}...")
 
-def get_mapping(word):
+    def isalpha(str: str) -> bool:
+        for letter in str.lower():
+            if letter not in alphabet:
+                return False
+        return True
+    
+    with open(file_path, 'r') as f:    
+        for line in f.readlines():
+            for word in line.strip().split(" "):
+                message.append((''.join(filter(isalpha, word))).lower().rstrip())
+    return [word for word in list(set(message)) if word]
+
+def get_mapping(word: str, alphabet: str) -> dict:
     mapping = {}
     for letter in word:
         if not mapping.get(letter):
-            mapping[letter] = ALPHABET[len(mapping)]
+            mapping[letter] = alphabet[len(mapping)]
     return mapping
 
-def get_pattern(word):
-    mapping = get_mapping(word)
+def get_pattern(word: str, alphabet: str) -> str:
+    mapping = get_mapping(word, alphabet)
     pattern = ""
     for letter in word:
         pattern += mapping[letter]
     return pattern
 
-def all_mappings(word):
-    pattern = get_pattern(word)
+def all_mappings(word: str, dictionary: dict, alphabet: str) -> dict:
+    pattern = get_pattern(word, alphabet)
     if not dictionary.get(pattern): return False
     bananagrams = dictionary[pattern]
     total_mapping = {letter: [] for letter in list(set(word))}
     for other_word in bananagrams:
-        mapping = {value: key for key, value in get_mapping(other_word).items()}
+        mapping = {value: key for key, value in get_mapping(other_word, alphabet).items()}
         for i in range(len(word)):
             total_mapping[word[i]].append(mapping[pattern[i]])
     total_mapping = {letter: set(mappings) for letter, mappings in total_mapping.items()}
     return total_mapping
 
-def cull_extras(possible_keys):
+def cull_extras(possible_keys: dict) -> dict:
     confirmed = ""
     for mapping in possible_keys:
         if len(possible_keys[mapping]) == 1:
@@ -50,34 +69,41 @@ def cull_extras(possible_keys):
 
     return possible_keys
 
-def count_all_keys(possible_keys):
+def count_all_keys(possible_keys: dict) -> int:
     prod = 1
     for key in possible_keys:
         prod *= len(possible_keys[key])
     return prod
 
-def decrypt(key):
+def decrypt(key: str, message_path: str, output_path: str, alphabet: str) -> None:
     new_message = ""
-    correct = open('bananagrams/correct.txt', 'w')
-    with open('bananagrams/message.txt', 'r') as f:
+    print(f"Writing translated message to {output_path}...")
+    correct = open(output_path, 'w')
+    with open(message_path, 'r') as f:
         lines = f.readlines()
         for line in lines:
             for letter in line:
-                if letter.lower() in ALPHABET:
+                if letter.lower() in alphabet:
                     if letter.lower() == letter:
-                        new_message += key[ALPHABET.index(letter.lower())]
+                        new_message += key[alphabet.index(letter.lower())]
                     else:
-                        new_message += key[ALPHABET.index(letter.lower())].upper()
+                        new_message += key[alphabet.index(letter.lower())].upper()
                 else:
                     new_message += letter
     correct.write(new_message)
 
-def generate_keystrings(keyspace):
+def decrypt_word(word: str, key: str, alphabet: str) -> str:
+    new_word = ""
+    for letter in word:
+        new_word += key[alphabet.index(letter)]
+    return new_word
+
+def generate_keystrings(keyspace: dict, alphabet: str) -> list[str]:
     keystrings = ['']
-    for i in range(len(ALPHABET)):
+    for i in range(len(alphabet)):
         next_keystrings = []
         for current_key in keystrings:
-            next_letter = ALPHABET[i]
+            next_letter = alphabet[i]
             possible_values = keyspace[next_letter]
             for letter in possible_values:
                 if letter not in current_key:
@@ -85,15 +111,9 @@ def generate_keystrings(keyspace):
         keystrings = next_keystrings
     return keystrings
 
-def decrypt_word(word, key):
-    new_word = ""
-    for letter in word:
-        new_word += key[ALPHABET.index(letter)]
-    return new_word
-
-def brute_force(keyspace, message):
+def brute_force(keyspace: dict, message: list[str], dictionary: dict, alphabet: str, threshold: float = 1) -> str:
     start_time = time.time()
-    keyspace = generate_keystrings(keyspace)
+    keyspace = generate_keystrings(keyspace, alphabet)
 
     for i in range(len(keyspace)):
         if i % 10000 == 0:
@@ -105,46 +125,51 @@ def brute_force(keyspace, message):
                 else:
                     print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i)/len(keyspace):.2f}%) -- {remaining_time:.2f} seconds remaining")
             else:
-                print(f"Brute Forcing Keyspace of {len(keyspace):,} keys...")
+                print(f"Brute Forcing Keyspace of {len(keyspace):,} keys with {threshold*100:.2f}% threshold...")
         key = keyspace[i]
-        for word in message:
-            pattern = get_pattern(word)
-            if not dictionary.get(pattern): continue
-            decrypted_word = decrypt_word(word, key)
-            if decrypted_word not in dictionary[pattern]:
-                break
+
+        if threshold == 1:
+            for word in message:
+                pattern = get_pattern(word, alphabet)
+                if not dictionary.get(pattern): continue
+                decrypted_word = decrypt_word(word, key, alphabet)
+                if decrypted_word not in dictionary[pattern]:
+                    break
+            else:
+                print(f"Valid key found after {i+1:,} searches!")
+                return key
         else:
-            print(f"Valid key found after {i+1:,} searches!")
-            return key
+            valid_words = 0
 
-# def invert_key(reciprocal_key):
-#     original_key = ""
-#     for letter in reciprocal_key:
-#         original_key += reciprocal_key[ALPHABET.index(letter)]
-#     return original_key
+            for word in message:
+                pattern = get_pattern(word)
+                if not dictionary.get(pattern): continue
+                decrypted_word = decrypt_word(word, key)
+                if decrypted_word not in dictionary[pattern]: continue
+                valid_words += 1
+            
+            if valid_words/len(message) >= threshold:
+                print(f"Valid key found after {i+1:,} searches!")
+                return key
 
-if __name__ == "__main__":
-    dictionary = {}
-    print("Creating Dictionary...")
-    with open('bananagrams/dictionary.txt', 'r') as f:
-        for pair in f.readlines():
-            pattern, word = pair.strip().split(" ")
-            if not dictionary.get(pattern):
-                dictionary[pattern] = []
-            dictionary[pattern].append(word)
+def invert_key(reciprocal_key: str, alphabet: str) -> str:
+    original_key = ['' for _ in range(len(alphabet))]
+    for i in range(len(reciprocal_key)):
+        letter = reciprocal_key[i]
+        original_key[alphabet.index(letter)] = alphabet[i]
+    return ''.join(original_key)
 
-    message = []
-    print("Reading message...")
-    with open('bananagrams/message.txt', 'r') as f:    
-        for line in f.readlines():
-            for word in line.strip().split(" "):
-                message.append((''.join(filter(isalpha, word))).lower().rstrip())
-    message = [word for word in list(set(message)) if word]
+def main() -> None:
+    ALPHABET = "abcdefghijklmnopqrstuvwxyz"
+    THRESHOLD = 1
+
+    dictionary = create_dictionary('bananagrams/dictionary.txt')
+    message = read_message('bananagrams/message.txt', ALPHABET)
 
     possible_keys = {letter: set([l for l in ALPHABET]) for letter in ALPHABET}
     print("Narrowing Keyspace...")
     for word in message:
-        word_mappings = all_mappings(word)
+        word_mappings = all_mappings(word, dictionary, ALPHABET)
         if not word_mappings: continue
         for letter in word_mappings:
             possible_keys[letter] = possible_keys[letter] & word_mappings[letter]
@@ -153,24 +178,25 @@ if __name__ == "__main__":
         keyspace_size = count_all_keys(possible_keys)
 
         if keyspace_size == 1:
-            reciprocal_key = ''.join([list(possible_keys[mapping])[0] for mapping in possible_keys])
-            # original_key = invert_key(reciprocal_key)
+            decrypting_key = ''.join([list(possible_keys[mapping])[0] for mapping in possible_keys])
+            encrypting_key = invert_key(decrypting_key, ALPHABET)
             print("Absolute key found!")
-            print(f'{reciprocal_key = }')
-            # print(f'{original_key = }')
-            print("Translating message...")
-            decrypt(reciprocal_key)
+            print(f'{decrypting_key = }')
+            print(f'{encrypting_key = }')
+            decrypt(decrypting_key, 'bananagrams/message.txt', 'bananagrams/correct.txt', ALPHABET)
             break
     else:
         # possible_keys = cull_extras(possible_keys)
         print(f"Generating Keystrings from {keyspace_size:,} possible keys...")
-        reciprocal_key = brute_force(possible_keys, message)
-        if reciprocal_key:
-            # original_key = invert_key(reciprocal_key)
-            print(f'{reciprocal_key = }')
-            # print(f'{original_key = }')
-            print("Translating message...")
-            decrypt(reciprocal_key)
+        decrypting_key = brute_force(possible_keys, message, dictionary, ALPHABET, THRESHOLD)
+        if decrypting_key:
+            encrypting_key = invert_key(decrypting_key, ALPHABET)
+            print(f'{decrypting_key = }')
+            print(f'{encrypting_key = }')
+            decrypt(decrypting_key, 'bananagrams/message.txt', 'bananagrams/correct.txt', ALPHABET)
         else:
             print("No key found ):")
             print("There is likely at least one word in your message that is not part of the dictionary.")
+
+if __name__ == "__main__":
+    main()
