@@ -6,8 +6,10 @@ def inverse_regression(x_values: list[float], y_values: list[float], power: floa
     x_inv_sq = sum([1/x**(2*power) for x in x_values])
     y_x = sum([y/x**power for x, y in zip(x_values, y_values)])
 
-    a = (y_x - y_t * x_inv / n) / (x_inv_sq - x_inv**2 / n)
-    b = (y_t - a * x_inv) / n
+    a = y_x / x_inv_sq
+    b = 0
+    # a = (y_x - y_t * x_inv / n) / (x_inv_sq - x_inv**2 / n)
+    # b = (y_t - a * x_inv) / n
 
     func = lambda x: a/x**power + b
     error = sum([(y - func(x)) ** 2 for x, y in zip(x_values, y_values)])

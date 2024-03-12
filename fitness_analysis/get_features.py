@@ -46,7 +46,7 @@ def main(feature_range) -> None:
                 dictionary[pattern] = []
             dictionary[pattern].append(word)
 
-    features = []    
+    features = {}
     print("Formatting text...")
     with open('frequency_analysis/text.txt') as f:
         lines = f.readlines()
@@ -78,9 +78,9 @@ def main(feature_range) -> None:
             continue
 
         feature_dict = dict(sorted(feature_dict.items(), key=lambda x:x[1], reverse=True))
-        # total = sum(feature_dict.values())
-        # feature_dict = {key: value/total for key, value in feature_dict.items()}
-        features.append({search_type: feature_dict})
+        total = sum(feature_dict.values())
+        feature_dict = {key: value/total for key, value in feature_dict.items()}
+        features[search_type] = feature_dict
 
     with open("fitness_analysis/features.toml", 'wb') as f:
         tomli_w.dump({"features": features}, f)

@@ -4,8 +4,8 @@ from regression import inverse_regression
 from scipy.optimize import curve_fit
 import math
 
-def inverse(x, Beta_1, Beta_2, Beta_3):
-    return Beta_1 / x ** Beta_2 + Beta_3
+def inverse(x, Beta_1, Beta_2):
+    return Beta_1 / x ** Beta_2
 
 from os import environ
 
@@ -42,7 +42,8 @@ if __name__ == "__main__":
         print(f"nth root: {1/b}")
 
         a = regression["a"]
-        c = regression["b"]
+        # c = regression["b"]
+        c = 0
         func = lambda x: a/x**b + c
 
         plt.plot(x_values, [func(x) for x in x_values])

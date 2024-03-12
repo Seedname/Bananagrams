@@ -15,5 +15,5 @@ def decrypt(key):
                     new_message += letter
     correct.write(new_message)
     
-key = 'sprgwhkjoqzldcuvyemnbtiafx'
+key = 'sprgwhkxojzldcuvyemnbtiafq'
 decrypt(key)
