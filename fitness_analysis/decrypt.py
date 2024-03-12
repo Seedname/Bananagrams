@@ -45,13 +45,13 @@ def get_features_from_words(words: list[str], graphs: int) -> dict:
     
     return feature_dict
 
-def get_fitness(key: str, fitness_values: list[dict], default_fitness: list[float], message: list[str], alphabet: str) -> float:
+def get_fitness(key: str, fitness_values: list[dict], default_fitness: list[float], feature_counts: list[int], message: list[str], alphabet: str) -> float:
     words = [decrypt.decrypt_word(word, key, alphabet) for word in message]
 
     fitness: float = 0.0
 
-    for i in range(3):
-        feature_count = i + 2
+    for i in range(len(feature_counts)):
+        feature_count = feature_counts[i]
 
         features = get_features_from_words(words, feature_count)
         for feature in features:
@@ -67,7 +67,7 @@ def swap_chars(key: str, i: int, j: int) -> str:
     key[i], key[j] = key[j], key[i]
     return ''.join(key)
 
-def evolve_key(key: str, fitness_values: list[dict], default_fitness: list[float], message: list[str], alphabet: str, max_iterations:int = 10**2) -> str:
+def evolve_key(key: str, fitness_values: list[dict], default_fitness: list[float], feature_counts: list[int], message: list[str], alphabet: str, max_iterations:int = 10**2) -> str:
     start_time = time.time()
     for num in range(max_iterations):
         if num % 10 == 0 and num > 0:
@@ -75,14 +75,14 @@ def evolve_key(key: str, fitness_values: list[dict], default_fitness: list[float
             remaining_time = (elapsed_time / num) * (max_iterations - num)
             print(f"Evolving Key {num}/{max_iterations} ---- Time remaining: {remaining_time/60:.2f} minutes")
 
-        base_fitness = get_fitness(key, fitness_values, default_fitness, message, alphabet)
+        base_fitness = get_fitness(key, fitness_values, default_fitness, feature_counts, message, alphabet)
 
         child_keys = []
         for i in range(len(key)):
             for j in range(i+1, len(key)):
                 child_keys.append(swap_chars(key, i, j))
 
-        fitnesses = [get_fitness(key, fitness_values, default_fitness, message, alphabet) for key in child_keys]
+        fitnesses = [get_fitness(key, fitness_values, default_fitness, feature_counts, message, alphabet) for key in child_keys]
         max_fitness = max(fitnesses)
 
         if max_fitness > base_fitness:
@@ -94,18 +94,15 @@ def evolve_key(key: str, fitness_values: list[dict], default_fitness: list[float
 
 def main() -> None:
     ALPHABET = "abcdefghijklmnopqrstuvwxyz"
+    feature_counts = [2, 3, 4]
 
     if not os.path.exists("fitness_analysis/features.toml"):
-        get_features.main([2, 3, 4])
+        get_features.main(feature_counts)
     
     with open('fitness_analysis/features.toml', 'rb') as f:
         features: dict = tomli.load(f)["features"]
     
-    digraphs = features["digraphs"]
-    trigraphs = features["trigraphs"]
-    quadgraphs = features["quadgraphs"]
-    
-    features: list[dict] = [digraphs, trigraphs, quadgraphs]
+    features: list[dict] = [features[str(feature_count)] for feature_count in feature_counts]
     default_fitness: list[float] = [math.log(min(feature.values())) + 7 for feature in features]
     fitness_values: list[dict] = [{key: math.log(value) + 8 for key, value in feature.items()} for feature in features]
 
@@ -113,7 +110,7 @@ def main() -> None:
     base_key = generate_random_key(ALPHABET)
 
     print("Evolving key...")
-    final_key = evolve_key(base_key, fitness_values, default_fitness, message, ALPHABET)
+    final_key = evolve_key(base_key, fitness_values, default_fitness, feature_counts, message, ALPHABET)
     print(final_key)
     decrypt.decrypt(final_key, 'bananagrams/message.txt', 'fitness_analysis/correct.txt', ALPHABET)
 

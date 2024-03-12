@@ -80,7 +80,7 @@ def main(feature_range) -> None:
         feature_dict = dict(sorted(feature_dict.items(), key=lambda x:x[1], reverse=True))
         total = sum(feature_dict.values())
         feature_dict = {key: value/total for key, value in feature_dict.items()}
-        features[search_type] = feature_dict
+        features[str(count)] = feature_dict
 
     with open("fitness_analysis/features.toml", 'wb') as f:
         tomli_w.dump({"features": features}, f)
