@@ -13,7 +13,7 @@ def main() -> None:
     ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
     print("Creating Dictionary...")
-    with open('frequency_analysis/dictionary.txt', 'r') as f:
+    with open('../frequency_analysis/dictionary.txt', 'r') as f:
         for pair in f.readlines():
             pattern, word = pair.strip().split(" ")
             if not dictionary.get(pattern):
@@ -21,7 +21,7 @@ def main() -> None:
             dictionary[pattern].append(word)
 
     print("Formatting text...")
-    with open('frequency_analysis/text.txt') as f:
+    with open('../frequency_analysis/text.txt') as f:
         lines = f.readlines()
         message = filter_text(lines, dictionary, ALPHABET)
 
@@ -33,10 +33,10 @@ def main() -> None:
             words[word] += 1
 
     words = dict(sorted(words.items(), key=lambda x:x[1], reverse=True))
-    most_words_displayed = 150
+    most_words_displayed = len(words)
     x_values = range(1, most_words_displayed+1)
     y_values = [word/len(words) for word in list(words.values())[:most_words_displayed]]
-    
+
     popt, pcov = curve_fit(inverse, x_values, y_values)
     b = popt[1]
     regression = inverse_regression(x_values, y_values, b)

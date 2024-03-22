@@ -23,8 +23,8 @@ def fitness(key: str, dictionary: dict, message: list[str], alphabet: str) -> in
 class Evolution:
     def __init__(self, pop_size:int) -> None:
         self.ALPHABET = "abcdefghijklmnopqrstuvwxyz"
-        self.dictionary = decrypt.create_dictionary('bananagrams/dictionary.txt')
-        self.message = decrypt.read_message('bananagrams/message.txt', self.ALPHABET)
+        self.dictionary = decrypt.create_dictionary('../bananagrams/dictionary.txt')
+        self.message = decrypt.read_message('../bananagrams/message.txt', self.ALPHABET)
 
         self.pop_size = pop_size
         self.population = [generate_random_key(self.ALPHABET) for _ in range(pop_size)]
@@ -50,7 +50,7 @@ class Evolution:
         return ''.join(key)
         # uhh maybe figure out how to add crossover as well
     
-    def filter(self, survivors: int = 0.5) -> None:
+    def filter(self, survivors: float = 0.5) -> None:
         self.population = [key for key, _ in list(sorted(self.get_fitnesses(), key=lambda x:x[1], reverse=True))]
         survivors = self.population[:int(self.pop_size * survivors)]
         self.population = survivors.copy()

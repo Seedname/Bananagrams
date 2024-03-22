@@ -19,7 +19,7 @@ if __name__ == "__main__":
     suppress_qt_warnings()
     
     print("Reading features...")
-    with open('frequency_analysis/features.toml', 'rb') as f:
+    with open('../frequency_analysis/features.toml', 'rb') as f:
         features: list[dict] = tomli.load(f)["features"]
 
     for feature in features:

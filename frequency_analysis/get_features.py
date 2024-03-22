@@ -39,7 +39,7 @@ if __name__ == "__main__":
     ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
     print("Creating Dictionary...")
-    with open('frequency_analysis/dictionary.txt', 'r') as f:
+    with open('../frequency_analysis/dictionary.txt', 'r') as f:
         for pair in f.readlines():
             pattern, word = pair.strip().split(" ")
             if not dictionary.get(pattern):
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     feature_range = range(1, 10 +1)
     
     print("Formatting text...")
-    with open('frequency_analysis/text.txt') as f:
+    with open('../frequency_analysis/text.txt') as f:
         lines = f.readlines()
         text = filter_text(lines, dictionary, ALPHABET)
 
@@ -84,5 +84,5 @@ if __name__ == "__main__":
         feature_dict = {key: value/total for key, value in feature_dict.items()}
         features.append({search_type: feature_dict})
 
-    with open('frequency_analysis/features.toml', 'wb') as f:
+    with open('../frequency_analysis/features.toml', 'wb') as f:
         tomli_w.dump({"features": features}, f)

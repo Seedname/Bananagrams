@@ -1,7 +1,7 @@
 dictionary = {}
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
-with open('bananagrams/dictionary.txt', 'r') as f:
+with open('../bananagrams/dictionary.txt', 'r') as f:
     for pair in f.readlines():
         pattern, word = pair.strip().split(" ")
         if not dictionary.get(pattern):

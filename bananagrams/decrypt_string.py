@@ -1,8 +1,8 @@
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 def decrypt(key):
     new_message = ""
-    correct = open('bananagrams/correct.txt', 'w')
-    with open('bananagrams/message.txt', 'r') as f:
+    correct = open('../bananagrams/correct.txt', 'w')
+    with open('../bananagrams/message.txt', 'r') as f:
         lines = f.readlines()
         for line in lines:
             for letter in line:
