@@ -9,9 +9,6 @@ import time
 sys.path.insert(1, '../bananagrams')
 import bananagrams.decrypt as decrypt
 
-# use bananagrams or bananagraphs as a starting point, then maybe run a fitness analysis on it.
-# this could be more efficient than brute forcing for large datasets.
-# maybe for aristocratic data, start with bananagrams, then for paristocratic data, start with bananagraphs.
 
 def generate_random_key(alphabet: str) -> str:
     return ''.join(random.sample(alphabet, len(alphabet)))
@@ -78,20 +75,49 @@ def swap_chars(key: str, i: int, j: int) -> str:
     return ''.join(key)
 
 
-def evolve_key(key: str, features: list[dict], feature_counts: list[int],
-               message: list[str], alphabet: str, max_iterations: int = 10 ** 2) -> tuple[str, float]:
+def generate_base_key(message: list[str], single_letter_features: dict, alphabet: str) -> str:
+    current_features = list(sorted(get_features.get_feature(message, 1).items(), reverse=True, key=lambda x: x[1]))
+    key = ["" for _ in range(len(alphabet))]
+    current_letters = [*alphabet]
+    single_letters = list(single_letter_features.keys())
 
-    default_fitness: list[float] = [math.log(min(feature.values())) for feature in features]
-    fitness_values: list[dict] = [{key: math.log(value) for key, value in feature.items()} for feature in features]
+    for i in range(len(single_letter_features)):
+        if i < len(current_letters):
+            letter = current_features[i][0]
+            index = alphabet.index(letter)
+            key[index] = single_letters[i]
+            current_letters.remove(letter)
+        else:
+            index = alphabet.index(current_letters[0])
+            key[index] = single_letters[i]
+            current_letters.pop(0)
 
-    max_fitness = 0
-    start_time = time.time()
-    for num in range(max_iterations):
-        if num % 10 == 0 and num > 0:
-            elapsed_time = time.time() - start_time
-            remaining_time = (elapsed_time / num) * (max_iterations - num)
-            print(f"Evolving Key {num}/{max_iterations} ---- Time remaining: {remaining_time / 60:.2f} minutes")
+    return ''.join(key)
 
+
+def determine_key(original_message: list[str], final_message: list[str], alphabet: str):
+    mapping = {char: "" for char in alphabet}
+    current_letters = [*alphabet]
+
+    for i in range(len(original_message)):
+        for j in range(len(original_message[i])):
+            original_letter = original_message[i][j]
+            final_letter = final_message[i][j]
+
+            if not mapping[original_letter]:
+                current_letters.remove(final_letter)
+                mapping[original_letter] = final_letter
+
+    non_mapped = [letter for letter in mapping if not mapping[letter]]
+    for i in range(len(non_mapped)):
+        mapping[non_mapped[i]] = current_letters[i]
+
+    return ''.join(mapping.values())
+
+
+def evolve_generation(key: str, fitness_values: list[dict], default_fitness: list[float], feature_counts: list[int],
+                      message: list[str], alphabet: str):
+    while True:
         base_fitness = get_fitness(key, fitness_values, default_fitness, feature_counts, message, alphabet)
 
         child_keys = []
@@ -108,34 +134,53 @@ def evolve_key(key: str, features: list[dict], feature_counts: list[int],
         else:
             return key, max_fitness
 
-    return key, max_fitness
+
+def evolve_key(single_letter_features: dict, features: list[dict], feature_counts: list[int], message: list[str],
+               alphabet: str, passes: int = 5, key: str = None) -> tuple[str, float]:
+    default_fitness: list[float] = [math.log(min(feature.values())) for feature in features]
+    fitness_values: list[dict] = [{key: math.log(value) for key, value in feature.items()} for feature in features]
+    original_message = message.copy()
+
+    if not key:
+        key = generate_base_key(message, single_letter_features, alphabet)
+
+    fitness = 0
+
+    for num in range(passes):
+        key, fitness = evolve_generation(key, fitness_values, default_fitness, feature_counts, message, alphabet)
+        message = [decrypt.decrypt_word(word, key, alphabet) for word in message]
+        print(f"Finished pass {num + 1}/{passes}")
+
+    return determine_key(original_message, message, alphabet), fitness
+
 
 def main() -> None:
-    ALPHABET = "abcdefghijklmnopqrstuvwxyz"
-    # base_key = "sprgxhkjozwldcuvyemnbtiafq"
-    base_key = None
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
 
     feature_counts = [2, 3, 4]
 
     if not os.path.exists("../fitness_analysis/features.toml"):
-        get_features.main(feature_counts)
+        get_features.main([1] + feature_counts)
 
     with open('../fitness_analysis/features.toml', 'rb') as f:
         features: dict = tomli.load(f)["features"]
 
-    features: list[dict] = [features[str(feature_count)] for feature_count in feature_counts]
+    current_features: list[dict] = [features[str(feature_count)] for feature_count in feature_counts]
 
-    message = read_message('../bananagrams/message.txt', ALPHABET)
-    if not base_key: base_key = generate_random_key(ALPHABET)
+    message: list[str] = read_message('../encrypt/message.txt', alphabet)
+
+    if len(message) > 100:
+        message = random.sample(message, 100)
 
     print("Evolving key...")
-    decrypting_key, _ = evolve_key(base_key, features, feature_counts, message, ALPHABET)
-    encrypting_key = decrypt.invert_key(decrypting_key, alphabet=ALPHABET)
+    decrypting_key, _ = evolve_key(features["1"], current_features, feature_counts, message, alphabet)
+    encrypting_key = decrypt.invert_key(decrypting_key, alphabet)
 
     print(f'{decrypting_key = }')
     print(f'{encrypting_key = }')
 
-    decrypt.decrypt(decrypting_key, '../bananagrams/message.txt', '../fitness_analysis/correct.txt', ALPHABET)
+    decrypt.decrypt(decrypting_key, '../encrypt/message.txt', '../fitness_analysis/correct.txt', alphabet)
+
 
 if __name__ == "__main__":
     main()

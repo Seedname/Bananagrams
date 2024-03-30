@@ -24,7 +24,7 @@ class Evolution:
     def __init__(self, pop_size:int) -> None:
         self.ALPHABET = "abcdefghijklmnopqrstuvwxyz"
         self.dictionary = decrypt.create_dictionary('../bananagrams/dictionary.txt')
-        self.message = decrypt.read_message('../bananagrams/message.txt', self.ALPHABET)
+        self.message = decrypt.read_message('../encrypt/message.txt', self.ALPHABET)
 
         self.pop_size = pop_size
         self.population = [generate_random_key(self.ALPHABET) for _ in range(pop_size)]

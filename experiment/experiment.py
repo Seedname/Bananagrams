@@ -15,15 +15,16 @@ import bananagrams.decrypt as bananagrams
 
 def normalized_hamming_distance(test_key: str, real_key: str) -> float:
     num_correct = 0
-    for i in range(len(first_key)):
-        if first_key[i] == second_key[i]:
+    for i in range(len(test_key)):
+        if test_key[i] == real_key[i]:
             num_correct += 1
-    return num_correct / len(first_key)
+    return num_correct / len(test_key)
+
 
 def fitness_analysis_runner():
     alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-    message = fitness.read_message('../bananagrams/message.txt', alphabet)
+    message = fitness.read_message('../encrypt/message.txt', alphabet)
 
     with open('../fitness_analysis/features.toml', 'rb') as f:
         features: dict = tomli.load(f)["features"]
@@ -37,13 +38,13 @@ def fitness_analysis_runner():
     start_length = 20
     end_length = 200
 
-    runtimes = {str(i): 0 for i in range(start_length, end_length+1, 10)}
-    accuracies = {str(i): 0 for i in range(start_length, end_length+1, 10)}
+    runtimes = {str(i): 0 for i in range(start_length, end_length + 1, 10)}
+    accuracies = {str(i): 0 for i in range(start_length, end_length + 1, 10)}
     times = 100
 
     start_time = time.time()
-    for curr_num in range(1, times+1):
-        for num_words in range(start_length, end_length+1, 10):
+    for curr_num in range(1, times + 1):
+        for num_words in range(start_length, end_length + 1, 10):
             print(num_words)
             sub_message = random.sample(message, num_words)
             start_time = time.time()
@@ -57,10 +58,10 @@ def fitness_analysis_runner():
 
         elapsed_time = time.time() - start_time
         remaining_time = (elapsed_time / curr_num) * (times - curr_num)
-        print(f"Evolving Key {curr_num}/{times} ---- Time remaining: {remaining_time / 60:.2f} minutes")
+        print(f"Experiment {curr_num}/{times} ---- Time remaining: {remaining_time / 60:.2f} minutes")
 
-    runtimes = {key: value/times for key, value in runtimes.items()}
-    accuracies = {key: value/times for key, value in accuracies.items()}
+    runtimes = {key: value / times for key, value in runtimes.items()}
+    accuracies = {key: value / times for key, value in accuracies.items()}
 
     with open('fitness_analysis.toml', 'wb') as f:
         tomli_w.dump({"n": times,
@@ -91,10 +92,11 @@ def fitness_analysis_runner():
     plt.savefig("accuracy_graph.png")
     plt.show()
 
+
 def bananagrams_runner():
     alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-    message = fitness.read_message('../bananagrams/message.txt', alphabet)
+    message = fitness.read_message('../encrypt/message.txt', alphabet)
     dictionary = bananagrams.create_dictionary('../bananagrams/dictionary.txt')
     threshold = 1
 
@@ -103,13 +105,13 @@ def bananagrams_runner():
     start_length = 5
     end_length = 15
 
-    runtimes = {str(i): 0 for i in range(start_length, end_length+1, 10)}
-    accuracies = {str(i): 0 for i in range(start_length, end_length+1, 10)}
+    runtimes = {str(i): 0 for i in range(start_length, end_length + 1, 10)}
+    accuracies = {str(i): 0 for i in range(start_length, end_length + 1, 10)}
     times = 100
 
     start_time = time.time()
-    for curr_num in range(1, times+1):
-        for num_words in range(start_length, end_length+1, 10):
+    for curr_num in range(1, times + 1):
+        for num_words in range(start_length, end_length + 1, 10):
             print(num_words)
 
             sub_message = random.sample(message, num_words)
@@ -141,10 +143,10 @@ def bananagrams_runner():
 
         elapsed_time = time.time() - start_time
         remaining_time = (elapsed_time / curr_num) * (times - curr_num)
-        print(f"Evolving Key {curr_num}/{times} ---- Time remaining: {remaining_time / 60:.2f} minutes")
+        print(f"Experiment {curr_num}/{times} ---- Time remaining: {remaining_time / 60:.2f} minutes")
 
-    runtimes = {key: value/times for key, value in runtimes.items()}
-    accuracies = {key: value/times for key, value in accuracies.items()}
+    runtimes = {key: value / times for key, value in runtimes.items()}
+    accuracies = {key: value / times for key, value in accuracies.items()}
 
     with open('bananagrams.toml', 'wb') as f:
         tomli_w.dump({"n": times,
@@ -174,6 +176,7 @@ def bananagrams_runner():
 
     plt.savefig("accuracy_graph_bananagrams.png")
     plt.show()
+
 
 if __name__ == "__main__":
     # fitness_analysis_runner()

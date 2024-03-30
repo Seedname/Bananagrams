@@ -12,6 +12,7 @@ def create_dictionary(file_path: str) -> dict:
             dictionary[pattern].append(word)
     return dictionary
 
+
 def read_message(file_path: str, alphabet: str) -> list[str]:
     message = []
     print(f"Reading message from {file_path}...")
@@ -21,12 +22,13 @@ def read_message(file_path: str, alphabet: str) -> list[str]:
             if letter not in alphabet:
                 return False
         return True
-    
-    with open(file_path, 'r') as f:    
+
+    with open(file_path, 'r') as f:
         for line in f.readlines():
             for word in line.strip().split(" "):
                 message.append((''.join(filter(isalpha, word))).lower().rstrip())
     return [word for word in list(set(message)) if word]
+
 
 def get_mapping(word: str, alphabet: str) -> dict:
     mapping = {}
@@ -35,12 +37,14 @@ def get_mapping(word: str, alphabet: str) -> dict:
             mapping[letter] = alphabet[len(mapping)]
     return mapping
 
+
 def get_pattern(word: str, alphabet: str) -> str:
     mapping = get_mapping(word, alphabet)
     pattern = ""
     for letter in word:
         pattern += mapping[letter]
     return pattern
+
 
 def all_mappings(word: str, dictionary: dict, alphabet: str) -> dict:
     pattern = get_pattern(word, alphabet)
@@ -53,6 +57,7 @@ def all_mappings(word: str, dictionary: dict, alphabet: str) -> dict:
             total_mapping[word[i]].append(mapping[pattern[i]])
     total_mapping = {letter: set(mappings) for letter, mappings in total_mapping.items()}
     return total_mapping
+
 
 def cull_extras(possible_keys: dict) -> dict:
     confirmed = set()
@@ -73,6 +78,7 @@ def count_all_keys(possible_keys: dict) -> int:
         prod *= len(possible_keys[key])
     return prod
 
+
 def decrypt(key: str, message_path: str, output_path: str, alphabet: str) -> None:
     new_message = ""
     print(f"Writing translated message to {output_path}...")
@@ -90,11 +96,13 @@ def decrypt(key: str, message_path: str, output_path: str, alphabet: str) -> Non
                     new_message += letter
     correct.write(new_message)
 
+
 def decrypt_word(word: str, key: str, alphabet: str) -> str:
     new_word = ""
     for letter in word:
         new_word += key[alphabet.index(letter)]
     return new_word
+
 
 def generate_keystrings(keyspace: dict, alphabet: str) -> list[str]:
     keystrings = ['']
@@ -108,6 +116,7 @@ def generate_keystrings(keyspace: dict, alphabet: str) -> list[str]:
         keystrings = next_keystrings
     return keystrings
 
+
 def brute_force(keyspace: dict, message: list[str], dictionary: dict, alphabet: str, threshold: float = 1) -> str:
     keyspace = generate_keystrings(keyspace, alphabet)
     start_time = time.time()
@@ -117,11 +126,14 @@ def brute_force(keyspace: dict, message: list[str], dictionary: dict, alphabet: 
                 elapsed_time = time.time() - start_time
                 remaining_time = (elapsed_time / i) * (len(keyspace) - i)
                 if remaining_time > 60:
-                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i)/len(keyspace):.2f}%) -- {remaining_time/60:.2f} minutes remaining")
+                    print(
+                        f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100 * (i) / len(keyspace):.2f}%) -- {remaining_time / 60:.2f} minutes remaining")
                 else:
-                    print(f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100*(i)/len(keyspace):.2f}%) -- {remaining_time:.2f} seconds remaining")
+                    print(
+                        f"Brute Forcing Keyspace -- {i:,}/{len(keyspace):,} ({100 * (i) / len(keyspace):.2f}%) -- {remaining_time:.2f} seconds remaining")
             else:
-                print(f"Brute Forcing Keyspace of {len(keyspace):,} key{'s'[:len(keyspace)^1]} with {threshold*100:.2f}% threshold...")
+                print(
+                    f"Brute Forcing Keyspace of {len(keyspace):,} key{'s'[:len(keyspace) ^ 1]} with {threshold * 100:.2f}% threshold...")
         key = keyspace[i]
 
         if threshold == 1:
@@ -132,7 +144,7 @@ def brute_force(keyspace: dict, message: list[str], dictionary: dict, alphabet: 
                 if decrypted_word not in dictionary[pattern]:
                     break
             else:
-                print(f"Valid key found after {i+1:,} search{'es'[:(i+1)^1]}!")
+                print(f"Valid key found after {i + 1:,} search{'es'[:(i + 1) ^ 1]}!")
                 return key
         else:
             valid_words = 0
@@ -143,10 +155,11 @@ def brute_force(keyspace: dict, message: list[str], dictionary: dict, alphabet: 
                 decrypted_word = decrypt_word(word, key)
                 if decrypted_word not in dictionary[pattern]: continue
                 valid_words += 1
-            
-            if valid_words/len(message) >= threshold:
-                print(f"Valid key found after {i+1:,} search{'es'[:(i+1)^1]}!")
+
+            if valid_words / len(message) >= threshold:
+                print(f"Valid key found after {i + 1:,} search{'es'[:(i + 1) ^ 1]}!")
                 return key
+
 
 def invert_key(reciprocal_key: str, alphabet: str) -> str:
     original_key = ['' for _ in range(len(alphabet))]
@@ -155,12 +168,13 @@ def invert_key(reciprocal_key: str, alphabet: str) -> str:
         original_key[alphabet.index(letter)] = alphabet[i]
     return ''.join(original_key)
 
+
 def main() -> None:
     ALPHABET = "abcdefghijklmnopqrstuvwxyz"
     THRESHOLD = 1
 
     dictionary = create_dictionary('../bananagrams/dictionary.txt')
-    message = read_message('../bananagrams/message.txt', ALPHABET)
+    message = read_message('../encrypt/message.txt', ALPHABET)
 
     possible_keys = {letter: set([l for l in ALPHABET]) for letter in ALPHABET}
     print("Narrowing Keyspace...")
@@ -180,7 +194,7 @@ def main() -> None:
             print("Absolute key found!")
             print(f'{decrypting_key = }')
             print(f'{encrypting_key = }')
-            decrypt(decrypting_key, '../bananagrams/message.txt', '../bananagrams/correct.txt', ALPHABET)
+            decrypt(decrypting_key, '../encrypt/message.txt', '../bananagrams/correct.txt', ALPHABET)
             break
     else:
         # possible_keys = cull_extras(possible_keys)
@@ -190,10 +204,11 @@ def main() -> None:
             encrypting_key = invert_key(decrypting_key, ALPHABET)
             print(f'{decrypting_key = }')
             print(f'{encrypting_key = }')
-            decrypt(decrypting_key, '../bananagrams/message.txt', '../bananagrams/correct.txt', ALPHABET)
+            decrypt(decrypting_key, '../encrypt/message.txt', '../bananagrams/correct.txt', ALPHABET)
         else:
             print("No key found ):")
             print("There is likely at least one word in your message that is not part of the dictionary.")
+
 
 if __name__ == "__main__":
     main()
