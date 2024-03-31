@@ -13,7 +13,7 @@ import bananagrams.decrypt as bananagrams
 def generate_random_keystrings(keyspace: dict) -> list[str]:
     keyspace_size: int = bananagrams.count_all_keys(keyspace)
 
-    failsafe = 1e6
+    failsafe = 1e3
     current_contiguous: int = 0
 
     max_count: int = int(min(30.0, 0.1 * keyspace_size))
@@ -22,7 +22,7 @@ def generate_random_keystrings(keyspace: dict) -> list[str]:
     while len(keys) < max_count:
         current_key = ''.join([random.choice(list(letters)) for letters in keyspace.values()])
 
-        if len(set(current_key)) == len(current_key):
+        if len(set(current_key)) == len(current_key) and current_key not in keys:
             keys.add(current_key)
             current_contiguous = 0
         else:
