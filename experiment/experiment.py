@@ -102,14 +102,14 @@ def bananagrams_runner():
 
     real_key = "sprgwhkjoqzldcuvyemnbtiafx"
 
-    start_length = 5
-    end_length = 15
+    start_length = 20
+    end_length = 200
 
     runtimes = {str(i): 0 for i in range(start_length, end_length + 1, 10)}
     accuracies = {str(i): 0 for i in range(start_length, end_length + 1, 10)}
     times = 100
 
-    start_time = time.time()
+    total_time = time.time()
     for curr_num in range(1, times + 1):
         for num_words in range(start_length, end_length + 1, 10):
             print(num_words)
@@ -141,7 +141,7 @@ def bananagrams_runner():
             runtimes[str(num_words)] += runtime
             accuracies[str(num_words)] += accuracy
 
-        elapsed_time = time.time() - start_time
+        elapsed_time = time.time() - total_time
         remaining_time = (elapsed_time / curr_num) * (times - curr_num)
         print(f"Experiment {curr_num}/{times} ---- Time remaining: {remaining_time / 60:.2f} minutes")
 

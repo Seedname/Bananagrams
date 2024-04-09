@@ -176,7 +176,7 @@ def main() -> None:
     dictionary = create_dictionary('../bananagrams/dictionary.txt')
     message = read_message('../encrypt/message.txt', ALPHABET)
 
-    possible_keys = {letter: set([l for l in ALPHABET]) for letter in ALPHABET}
+    possible_keys = {letter: set(ALPHABET) for letter in ALPHABET}
     print("Narrowing Keyspace...")
 
     for word in message:

@@ -26,5 +26,6 @@ def encrypt(key: str, message_path: str, output_path: str, alphabet: str) -> Non
 if __name__ == "__main__":
     alphabet = "abcdefghijklmnopqrstuvwxyz"
     key = generate_random_key(alphabet)
+    key = "paswordbcefghijklmnqtuvxyz"
     print(f'{key = }')
     encrypt(key, 'plaintext.txt', 'message.txt', alphabet)

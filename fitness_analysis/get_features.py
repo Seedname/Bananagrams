@@ -84,8 +84,8 @@ def main(feature_range) -> None:
             continue
 
         feature_dict = dict(sorted(feature_dict.items(), key=lambda x: x[1], reverse=True))
-        total = sum(feature_dict.values())
-        feature_dict = {key: value / total for key, value in feature_dict.items()}
+        # total = sum(feature_dict.values())
+        # feature_dict = {key: value / total for key, value in feature_dict.items()}
         features[str(count)] = feature_dict
 
     with open("../fitness_analysis/features.toml", 'wb') as f:

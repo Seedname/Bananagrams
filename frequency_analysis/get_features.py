@@ -1,5 +1,6 @@
 import tomli_w
 
+
 def filter_text(lines: list[str], dictionary: dict, alphabet: str) -> list[str]:
     output = []
 
@@ -22,21 +23,39 @@ def filter_text(lines: list[str], dictionary: dict, alphabet: str) -> list[str]:
             if letter not in alphabet:
                 return False
         return True
-    
+
     for line in lines:
         for word in line.strip().split(" "):
             pattern = get_pattern(word)
             # if not dictionary.get(pattern) or word not in dictionary[pattern]:
-                # continue
+            # continue
             output.append((''.join(filter(isalpha, word))).lower().strip())
 
     return output
 
-prefixes = ["mono", "di", "tri", "quad", "penta", "hexa", "septa", "octa", "nona", "deca"]
 
-if __name__ == "__main__":
+def get_feature(text: list[str], count: int) -> dict:
+    feature_dict = {}
+
+    for word in text:
+        for i in range(len(word)):
+            if i + count > len(word):
+                break
+
+            substr = word[i:i + count]
+
+            if feature_dict.get(substr):
+                feature_dict[substr] += 1
+            else:
+                feature_dict[substr] = 1
+
+    return feature_dict
+
+
+def main(feature_range) -> None:
     dictionary = {}
     ALPHABET = "abcdefghijklmnopqrstuvwxyz"
+    prefixes = ["mono", "di", "tri", "quad", "penta", "hexa", "septa", "octa", "nona", "deca"]
 
     print("Creating Dictionary...")
     with open('../frequency_analysis/dictionary.txt', 'r') as f:
@@ -46,9 +65,7 @@ if __name__ == "__main__":
                 dictionary[pattern] = []
             dictionary[pattern].append(word)
 
-    features = []
-    feature_range = range(1, 10 +1)
-    
+    features = {}
     print("Formatting text...")
     with open('../frequency_analysis/text.txt') as f:
         lines = f.readlines()
@@ -58,31 +75,22 @@ if __name__ == "__main__":
     for count in feature_range:
         search_type = f"{count} contiguous letters"
         if count <= len(prefixes):
-            search_type = f"{prefixes[count-1]}graphs"
+            search_type = f"{prefixes[count - 1]}graphs"
 
         print(f"Looking for {search_type}")
 
-        feature_dict = {}
-        
-        for word in text:
-            for i in range(len(word)):
-                if i + count > len(word):
-                    break
-
-                substr = word[i:i+count]
-
-                if feature_dict.get(substr):
-                    feature_dict[substr] += 1
-                else:
-                    feature_dict[substr] = 1
-
+        feature_dict = get_feature(text, count)
         if len(feature_dict) == 0:
             continue
 
-        feature_dict = dict(sorted(feature_dict.items(), key=lambda x:x[1], reverse=True))
+        feature_dict = dict(sorted(feature_dict.items(), key=lambda x: x[1], reverse=True))
         total = sum(feature_dict.values())
-        feature_dict = {key: value/total for key, value in feature_dict.items()}
-        features.append({search_type: feature_dict})
+        feature_dict = {key: value / total for key, value in feature_dict.items()}
+        features[str(count)] = feature_dict
 
-    with open('../frequency_analysis/features.toml', 'wb') as f:
+    with open("../fitness_analysis/features.toml", 'wb') as f:
         tomli_w.dump({"features": features}, f)
+
+
+if __name__ == "__main__":
+    main(range(1, 10 + 1))

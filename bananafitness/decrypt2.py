@@ -10,52 +10,33 @@ import fitness_analysis.decrypt as fitness
 import bananagrams.decrypt as bananagrams
 
 
-def generate_random_keystrings(keyspace: dict) -> list[str]:
-    keyspace_size: int = bananagrams.count_all_keys(keyspace)
-
-    failsafe = 1e9
-    current_contiguous: int = 0
-
-    max_count: int = int(min(30.0, 0.1 * keyspace_size))
-    keys: set = set()
-
-    while len(keys) < max_count:
-        current_key = ''.join([random.choice(list(letters)) for letters in keyspace.values()])
-
-        if len(set(current_key)) == len(current_key) and current_key not in keys:
-            keys.add(current_key)
-            current_contiguous = 0
+def generate_key_from_keyspace(keyspace: dict, alphabet: str) -> str:
+    remaining_letters = [*alphabet]
+    key = ""
+    for letter in keyspace:
+        for current_letter in keyspace[letter]:
+            if current_letter in random.sample(remaining_letters, len(remaining_letters)):
+                key += current_letter
+                remaining_letters.remove(current_letter)
+                break
         else:
-            current_contiguous += 1
-
-        if current_contiguous >= failsafe:
-            break
-
-    if len(keys) == 0:
-        raise ValueError("oops")
-
-    return list(keys)
+            current_letter = random.choice(remaining_letters)
+            key += current_letter
+            remaining_letters.remove(current_letter)
+    return key
 
 
 def evolve_keyspace(keyspace: dict, alphabet: str, single_letter_features: dict, current_features: list[dict],
-                    feature_counts: list[int],
-                    message: list[str]) -> str:
-    keyspace: list[str] = generate_random_keystrings(keyspace)
-    if len(keyspace) > 20:
-        keyspace = random.sample(keyspace, 20)
+                    feature_counts: list[int], message: list[str], keyspace_size: int = 20) -> str:
 
-    print(f"Evolving {len(keyspace)} keys...")
-
-    result = {}
-    for i in range(len(keyspace)):
-        print(f"{i + 1}/{len(keyspace)}")
-        key = keyspace[i]
+    keyspace = [generate_key_from_keyspace(keyspace, alphabet) for _ in range(keyspace_size)]
+    results = {}
+    for key in keyspace:
         evolved_key, score = fitness.evolve_key(single_letter_features, current_features, feature_counts, message,
-                                                alphabet, key=key, passes=5)
-        result[evolved_key] = score
+                                                alphabet, key=key, passes=15)
+        results[evolved_key] = score
 
-    return max(result.items(), key=lambda x: x[1])[0]
-
+    return max(results.items(), key=lambda x: x[1])[0]
 
 def main() -> None:
     alphabet = "abcdefghijklmnopqrstuvwxyz"
