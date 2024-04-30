@@ -18,8 +18,9 @@ def get_mapping(word):
 def get_pattern(word):
     mapping = get_mapping(word)
     pattern = ""
+    print(''.join(mapping.keys()`))
     for letter in word:
         pattern += mapping[letter]
     return pattern
 
-print(dictionary[get_pattern("mammoth".lower())])
+print(', '.join(dictionary[get_pattern("bananas".lower())]))

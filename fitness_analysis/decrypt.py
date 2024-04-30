@@ -4,7 +4,6 @@ import os
 import tomli
 import math
 import random
-import time
 
 sys.path.insert(1, '../bananagrams')
 import bananagrams.decrypt as decrypt
@@ -50,8 +49,8 @@ def get_features_from_words(words: list[str], graphs: int) -> dict:
     return feature_dict
 
 
-def get_fitness(key: str, fitness_values: list[dict], default_fitness: list[float], feature_counts: list[int],
-                message: list[str], alphabet: str) -> float:
+def get_fitness(key: str, fitness_values: list[dict], default_fitness: list[float],
+                feature_counts: list[int], message: list[str], alphabet: str) -> float:
     words = [decrypt.decrypt_word(word, key, alphabet) for word in message]
 
     fitness: float = 0.0
@@ -115,8 +114,8 @@ def determine_key(original_message: list[str], final_message: list[str], alphabe
     return ''.join(mapping.values())
 
 
-def optimal_child(key: str, fitness_values: list[dict], default_fitness: list[float], feature_counts: list[int],
-                  message: list[str], alphabet: str) -> tuple[str, float]:
+def optimal_child(key: str, fitness_values: list[dict], default_fitness: list[float],
+                  feature_counts: list[int], message: list[str], alphabet: str) -> tuple[str, float]:
     child_keys = []
     for i in range(len(key)):
         for j in range(i + 1, len(key)):
@@ -129,26 +128,29 @@ def optimal_child(key: str, fitness_values: list[dict], default_fitness: list[fl
     return child_keys[fitnesses.index(max_fitness)], max_fitness
 
 
-def evolve_generation(key: str, fitness_values: list[dict], default_fitness: list[float], feature_counts: list[int],
-                      message: list[str], alphabet: str):
+def evolve_generation(key: str, fitness_values: list[dict], default_fitness: list[float],
+                      feature_counts: list[int], message: list[str], alphabet: str):
     while True:
         base_fitness = get_fitness(key, fitness_values, default_fitness, feature_counts, message, alphabet)
 
-        child_key, max_fitness = optimal_child(key, fitness_values, default_fitness, feature_counts, message, alphabet)
+        child_key, max_fitness = optimal_child(key, fitness_values, default_fitness, feature_counts,
+                                               message, alphabet)
         if max_fitness > base_fitness:
             key = child_key
-        else:
-            return key, max_fitness
+            continue
+
+        return key, max_fitness
 
 
-def evolve_key(single_letter_features: dict, features: list[dict], feature_counts: list[int], message: list[str],
-               alphabet: str, passes: int = 15, key: str = None) -> tuple[str, float]:
+def evolve_key(single_letter_features: dict, features: list[dict], feature_counts: list[int],
+               message: list[str], alphabet: str, passes: int = 15, key: str = None) -> tuple[str, float]:
     default_fitness: list[float] = [math.log(min(feature.values())) / 10 for feature in features]
-    fitness_values: list[dict] = [{key: math.log(value) for key, value in feature.items()} for feature in features]
+    fitness_values: list[dict] = [{key: math.log(value) for key, value in feature.items()}
+                                  for feature in features]
     original_message = message.copy()
 
     if not key:
-        key = generate_random_key(alphabet)
+        key = generate_base_key(message, single_letter_features, alphabet)
 
     fitness = 0
 

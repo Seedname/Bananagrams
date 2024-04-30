@@ -1,7 +1,5 @@
-from __future__ import annotations
 import random
 import sys
-
 sys.path.insert(1, '../bananagrams')
 import bananagrams.decrypt as decrypt
 import time
@@ -26,16 +24,16 @@ def fitness(key: str, dictionary: dict, message: list[str], alphabet: str) -> in
 
 class Evolution:
     def __init__(self, pop_size: int) -> None:
-        self.ALPHABET = "abcdefghijklmnopqrstuvwxyz"
+        self.alphabet = "abcdefghijklmnopqrstuvwxyz"
         self.dictionary = decrypt.create_dictionary('../bananagrams/dictionary.txt')
-        self.message = decrypt.read_message('../encrypt/message.txt', self.ALPHABET)
+        self.message = decrypt.read_message('../encrypt/message.txt', self.alphabet)
 
         self.pop_size = pop_size
-        self.population = [generate_random_key(self.ALPHABET) for _ in range(pop_size)]
+        self.population = [generate_random_key(self.alphabet) for _ in range(pop_size)]
         self.mutation_rate = 3
 
     def get_fitnesses(self) -> list[tuple[str, int]]:
-        return [(key, fitness(key, self.dictionary, self.message, self.ALPHABET)) for key in self.population]
+        return [(key, fitness(key, self.dictionary, self.message, self.alphabet)) for key in self.population]
 
     def mutate(self, key: str) -> str:
         length = len(key)
@@ -52,7 +50,6 @@ class Evolution:
             key[second_index] = first_item
 
         return ''.join(key)
-        # uhh maybe figure out how to add crossover as well
 
     def filter(self, survivors: float = 0.5) -> None:
         self.population = [key for key, _ in list(sorted(self.get_fitnesses(), key=lambda x: x[1], reverse=True))]
@@ -63,19 +60,17 @@ class Evolution:
             self.population.append(self.mutate(survivors[current_index]))
             current_index += 1
             current_index %= len(survivors)
-        # print(len(self.population))
 
 
 def main() -> None:
     start_time = time.time()
     genetic_solver = Evolution(pop_size=10)
     for i in range(1000):
-        # print(f"Evolving Generation {i+1}/1000")
         if i % 10 == 0 and i > 0:
             elapsed_time = time.time() - start_time
             remaining_time = (elapsed_time / i) * (1000 - i)
             print(f"Evolving Generation {i}/1000 ---- Time remaining: {remaining_time:.2f} seconds")
-        genetic_solver.filter(0.2)
+        genetic_solver.filter()
     print(max(genetic_solver.get_fitnesses(), key=lambda x: x[1]))
 
 

@@ -10,39 +10,66 @@ import fitness_analysis.decrypt as fitness
 import bananagrams.decrypt as bananagrams
 
 
-def generate_random_keystrings(keyspace: dict) -> list[str]:
-    keyspace_size: int = bananagrams.count_all_keys(keyspace)
-
-    failsafe = 1e9
-    current_contiguous: int = 0
-
-    max_count: int = int(min(30.0, 0.1 * keyspace_size))
-    keys: set = set()
-
-    while len(keys) < max_count:
-        current_key = ''.join([random.choice(list(letters)) for letters in keyspace.values()])
-
-        if len(set(current_key)) == len(current_key) and current_key not in keys:
-            keys.add(current_key)
-            current_contiguous = 0
+def generate_valid_key(keyspace: dict, alphabet: str) -> str | bool:
+    remaining_letters = [*alphabet]
+    key = ""
+    for letter in keyspace:
+        possible_letters = list(keyspace[letter])
+        for current_letter in random.sample(possible_letters, len(possible_letters)):
+            if current_letter in remaining_letters:
+                key += current_letter
+                remaining_letters.remove(current_letter)
+                break
         else:
-            current_contiguous += 1
+            return False
+    return key
 
-        if current_contiguous >= failsafe:
-            break
 
-    if len(keys) == 0:
-        raise ValueError("oops")
+def generate_random_keystrings(keyspace: dict, alphabet: str, keyspace_size: int = 20) -> list[str]:
+    keys = []
+    tries = 0
+    while len(keys) < keyspace_size:
+        tries += 1
+        next_key = generate_valid_key(keyspace, alphabet)
+        if next_key is False:
+            continue
+        keys.append(next_key)
+    print(f"Generated {keyspace_size} keys in {tries:,} tries")
+    return keys
 
-    return list(keys)
+    # old method
+    # failsafe = 1e9
+    # current_contiguous: int = 0
+    #
+    # max_count: int = 20
+    # keys: set = set()
+    #
+    # while len(keys) < max_count:
+    #     current_key = ''.join([random.choice(list(letters)) for letters in keyspace.values()])
+    #
+    #     if len(set(current_key)) == len(current_key) and current_key not in keys:
+    #         keys.add(current_key)
+    #         print(f"Found key {len(keys)}/{max_count}")
+    #         current_contiguous = 0
+    #     else:
+    #         current_contiguous += 1
+    #
+    #     if current_contiguous >= failsafe:
+    #         break
+    #
+    # if len(keys) == 0:
+    #     raise ValueError("Failed to find a key before reaching failsafe")
+    #
+    # return list(keys)
 
 
 def evolve_keyspace(keyspace: dict, alphabet: str, single_letter_features: dict, current_features: list[dict],
-                    feature_counts: list[int],
-                    message: list[str]) -> str:
-    keyspace: list[str] = generate_random_keystrings(keyspace)
-    if len(keyspace) > 20:
-        keyspace = random.sample(keyspace, 20)
+                    feature_counts: list[int], message: list[str]) -> str:
+
+    keyspace: list[str] = generate_random_keystrings(keyspace, alphabet)
+    print(keyspace)
+    # if len(keyspace) > 20:
+    #     keyspace = random.sample(keyspace, 20)
 
     print(f"Evolving {len(keyspace)} keys...")
 
@@ -51,7 +78,7 @@ def evolve_keyspace(keyspace: dict, alphabet: str, single_letter_features: dict,
         print(f"{i + 1}/{len(keyspace)}")
         key = keyspace[i]
         evolved_key, score = fitness.evolve_key(single_letter_features, current_features, feature_counts, message,
-                                                alphabet, key=key, passes=5)
+                                                alphabet, key=key, passes=15)
         result[evolved_key] = score
 
     return max(result.items(), key=lambda x: x[1])[0]
@@ -89,7 +116,7 @@ def main() -> None:
             bananagrams.decrypt(decrypting_key, '../encrypt/message.txt', '../bananafitness/correct.txt', alphabet)
             break
     else:
-        print(f"Generating Keystrings from {keyspace_size:,} possible keys...")
+        print(f"Generating Random Keystrings from {keyspace_size:,} possible keys...")
         decrypting_key = evolve_keyspace(possible_keys, alphabet, features["1"], current_features, feature_counts,
                                          message)
         encrypting_key = bananagrams.invert_key(decrypting_key, alphabet)

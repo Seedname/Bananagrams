@@ -1,7 +1,8 @@
 import tomli_w
 
 
-def filter_text(lines: list[str], dictionary: dict, alphabet: str) -> list[str]:
+def filter_text(lines: list[str], dictionary: dict, alphabet: str,
+                enforce_dict: bool = False) -> list[str]:
     output = []
 
     def get_mapping(word):
@@ -26,9 +27,10 @@ def filter_text(lines: list[str], dictionary: dict, alphabet: str) -> list[str]:
 
     for line in lines:
         for word in line.strip().split(" "):
-            pattern = get_pattern(word)
-            # if not dictionary.get(pattern) or word not in dictionary[pattern]:
-            # continue
+            if enforce_dict:
+                pattern = get_pattern(word)
+                if not dictionary.get(pattern) or word not in dictionary[pattern]:
+                    continue
             output.append((''.join(filter(isalpha, word))).lower().strip())
 
     return output
@@ -55,7 +57,8 @@ def get_feature(text: list[str], count: int) -> dict:
 def main(feature_range) -> None:
     dictionary = {}
     ALPHABET = "abcdefghijklmnopqrstuvwxyz"
-    prefixes = ["mono", "di", "tri", "quad", "penta", "hexa", "septa", "octa", "nona", "deca"]
+    prefixes = ["mono", "di", "tri", "quad", "penta", "hexa",
+                "septa", "octa", "nona", "deca"]
 
     print("Creating Dictionary...")
     with open('../frequency_analysis/dictionary.txt', 'r') as f:
@@ -75,7 +78,7 @@ def main(feature_range) -> None:
     for count in feature_range:
         search_type = f"{count} contiguous letters"
         if count <= len(prefixes):
-            search_type = f"{prefixes[count - 1]}graphs"
+            search_type = f"{prefixes[count - 1]}grams"
 
         print(f"Looking for {search_type}")
 
@@ -84,8 +87,6 @@ def main(feature_range) -> None:
             continue
 
         feature_dict = dict(sorted(feature_dict.items(), key=lambda x: x[1], reverse=True))
-        # total = sum(feature_dict.values())
-        # feature_dict = {key: value / total for key, value in feature_dict.items()}
         features[str(count)] = feature_dict
 
     with open("../fitness_analysis/features.toml", 'wb') as f:

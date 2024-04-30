@@ -1,13 +1,8 @@
-ALPHABET = "abcdefghijklmnopqrstuvwxyz"
-f = open('../bananagrams/no_pattern.txt', 'r')
-lines = [line.strip().lower() for line in f.readlines()]
-f.close()
-
-def get_pattern(word):
+def get_pattern(word: str, alphabet: str) -> str:
     mapping = {}
     for letter in word:
         if not mapping.get(letter):
-            mapping[letter] = ALPHABET[len(mapping)]
+            mapping[letter] = alphabet[len(mapping)]
 
     pattern = ""
     for letter in word:
@@ -15,6 +10,13 @@ def get_pattern(word):
 
     return pattern
 
-with open('../bananagrams/dictionary.txt', 'w') as f:
-    for word in lines:
-        f.write(f'{get_pattern(word)} {word}\n')
+
+if __name__ == "__main__":
+    alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+    with open('../bananagrams/no_pattern.txt', 'r') as f:
+        lines = [line.strip().lower() for line in f.readlines()]
+
+    with open('../bananagrams/dictionary.txt', 'w') as f:
+        for word in lines:
+            f.write(f'{get_pattern(word, alphabet)} {word}\n')

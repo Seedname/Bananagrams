@@ -1,5 +1,7 @@
 import random
-
+import sys
+sys.path.insert(1, '../bananagrams')
+import bananagrams.decrypt as bananagrams
 
 def generate_random_key(alphabet: str) -> str:
     return ''.join(random.sample(alphabet, len(alphabet)))
@@ -25,7 +27,8 @@ def encrypt(key: str, message_path: str, output_path: str, alphabet: str) -> Non
 
 if __name__ == "__main__":
     alphabet = "abcdefghijklmnopqrstuvwxyz"
-    key = generate_random_key(alphabet)
-    key = "paswordbcefghijklmnqtuvxyz"
-    print(f'{key = }')
-    encrypt(key, 'plaintext.txt', 'message.txt', alphabet)
+    encrypting_key = generate_random_key(alphabet)
+    decrypting_key = bananagrams.invert_key(encrypting_key, alphabet)
+    print(f'{encrypting_key = }')
+    print(f'{decrypting_key = }')
+    encrypt(encrypting_key, 'plaintext.txt', 'message.txt', alphabet)

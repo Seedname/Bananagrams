@@ -1,7 +1,6 @@
 import sys
 import random
 import tomli
-import math
 
 sys.path.insert(1, '../fitness_analysis')
 sys.path.insert(1, '../bananagrams')
@@ -14,8 +13,9 @@ def generate_key_from_keyspace(keyspace: dict, alphabet: str) -> str:
     remaining_letters = [*alphabet]
     key = ""
     for letter in keyspace:
-        for current_letter in keyspace[letter]:
-            if current_letter in random.sample(remaining_letters, len(remaining_letters)):
+        possible_letters = list(keyspace[letter])
+        for current_letter in random.sample(possible_letters, len(possible_letters)):
+            if current_letter in remaining_letters:
                 key += current_letter
                 remaining_letters.remove(current_letter)
                 break
@@ -27,16 +27,20 @@ def generate_key_from_keyspace(keyspace: dict, alphabet: str) -> str:
 
 
 def evolve_keyspace(keyspace: dict, alphabet: str, single_letter_features: dict, current_features: list[dict],
-                    feature_counts: list[int], message: list[str], keyspace_size: int = 20) -> str:
+                    feature_counts: list[int], message: list[str], keyspace_size: int = 10) -> str:
 
-    keyspace = [generate_key_from_keyspace(keyspace, alphabet) for _ in range(keyspace_size)]
+    keyspace = list(set(generate_key_from_keyspace(keyspace, alphabet) for _ in range(keyspace_size)))
+    print(keyspace)
     results = {}
-    for key in keyspace:
+    for i in range(len(keyspace)):
+        print(f"{i + 1}/{len(keyspace)}")
+        key = keyspace[i]
         evolved_key, score = fitness.evolve_key(single_letter_features, current_features, feature_counts, message,
                                                 alphabet, key=key, passes=15)
         results[evolved_key] = score
 
     return max(results.items(), key=lambda x: x[1])[0]
+
 
 def main() -> None:
     alphabet = "abcdefghijklmnopqrstuvwxyz"
