@@ -1,7 +1,6 @@
 import sys
 import random
 import tomli
-import math
 
 sys.path.insert(1, '../fitness_analysis')
 sys.path.insert(1, '../bananagrams')
@@ -25,7 +24,7 @@ def generate_valid_key(keyspace: dict, alphabet: str) -> str | bool:
     return key
 
 
-def generate_random_keystrings(keyspace: dict, alphabet: str, keyspace_size: int = 20) -> list[str]:
+def generate_random_keystrings(keyspace: dict, alphabet: str, keyspace_size: int = 5) -> list[str]:
     keys = []
     tries = 0
     while len(keys) < keyspace_size:
@@ -36,31 +35,6 @@ def generate_random_keystrings(keyspace: dict, alphabet: str, keyspace_size: int
         keys.append(next_key)
     print(f"Generated {keyspace_size} keys in {tries:,} tries")
     return keys
-
-    # old method
-    # failsafe = 1e9
-    # current_contiguous: int = 0
-    #
-    # max_count: int = 20
-    # keys: set = set()
-    #
-    # while len(keys) < max_count:
-    #     current_key = ''.join([random.choice(list(letters)) for letters in keyspace.values()])
-    #
-    #     if len(set(current_key)) == len(current_key) and current_key not in keys:
-    #         keys.add(current_key)
-    #         print(f"Found key {len(keys)}/{max_count}")
-    #         current_contiguous = 0
-    #     else:
-    #         current_contiguous += 1
-    #
-    #     if current_contiguous >= failsafe:
-    #         break
-    #
-    # if len(keys) == 0:
-    #     raise ValueError("Failed to find a key before reaching failsafe")
-    #
-    # return list(keys)
 
 
 def evolve_keyspace(keyspace: dict, alphabet: str, single_letter_features: dict, current_features: list[dict],
@@ -78,7 +52,7 @@ def evolve_keyspace(keyspace: dict, alphabet: str, single_letter_features: dict,
         print(f"{i + 1}/{len(keyspace)}")
         key = keyspace[i]
         evolved_key, score = fitness.evolve_key(single_letter_features, current_features, feature_counts, message,
-                                                alphabet, key=key, passes=15)
+                                                alphabet, key=key, passes=10)
         result[evolved_key] = score
 
     return max(result.items(), key=lambda x: x[1])[0]

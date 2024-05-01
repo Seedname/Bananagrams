@@ -210,7 +210,7 @@ def main() -> None:
             decrypt(decrypting_key, '../encrypt/message.txt', '../bananagrams/correct.txt', alphabet)
             break
     else:
-        # possible_keys = cull_extras(possible_keys)
+        possible_keys = cull_extras(possible_keys)
         print(f"Brute Forcing Keyspace from {keyspace_size:,} possible keys...")
         decrypting_key = brute_force(possible_keys, message, dictionary, alphabet, THRESHOLD)
         if decrypting_key:
