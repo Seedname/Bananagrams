@@ -1,3 +1,5 @@
+import pathlib
+
 def create_dictionary(file_path: str) -> dict:
     dictionary = {}
     print(f"Creating Dictionary from {file_path}...")
@@ -182,12 +184,14 @@ def invert_key(reciprocal_key: str, alphabet: str) -> str:
     return ''.join(original_key)
 
 
-def main() -> None:
+def main() -> None:    
     alphabet = "abcdefghijklmnopqrstuvwxyz"
     THRESHOLD = 1
 
-    dictionary = create_dictionary('../bananagrams/dictionary.txt')
-    message = read_message('../encrypt/message.txt', alphabet)
+    parent_dir = pathlib.Path(__file__).parent
+
+    dictionary = create_dictionary(parent_dir.parent / "bananagrams" / "dictionary.txt")
+    message = read_message(parent_dir.parent / "encrypt" / "message.txt", alphabet)
 
     possible_keys = {letter: set(alphabet) for letter in alphabet}
     print("Narrowing Keyspace...")
@@ -207,7 +211,7 @@ def main() -> None:
             print("Absolute key found!")
             print(f'{decrypting_key = }')
             print(f'{encrypting_key = }')
-            decrypt(decrypting_key, '../encrypt/message.txt', '../bananagrams/correct.txt', alphabet)
+            decrypt(decrypting_key, parent_dir.parent / "encrypt" / "message.txt", parent_dir.parent / "bananagrams" / "correct.txt", alphabet)
             break
     else:
         possible_keys = cull_extras(possible_keys)
@@ -217,7 +221,7 @@ def main() -> None:
             encrypting_key = invert_key(decrypting_key, alphabet)
             print(f'{decrypting_key = }')
             print(f'{encrypting_key = }')
-            decrypt(decrypting_key, '../encrypt/message.txt', '../bananagrams/correct.txt', alphabet)
+            decrypt(decrypting_key, parent_dir.parent / "encrypt" / "message.txt", parent_dir.parent / "bananagrams" / "correct.txt", alphabet)
         else:
             print("No key found ):")
             print("There is likely at least one word in your message that is not part of the dictionary.")

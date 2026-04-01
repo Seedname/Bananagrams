@@ -1,12 +1,10 @@
-import sys
-import get_features
-import os
 import tomli
 import math
 import random
 
-sys.path.insert(1, '../bananagrams')
+import fitness_analysis.get_features as get_features
 import bananagrams.decrypt as decrypt
+import pathlib
 
 
 def generate_random_key(alphabet: str) -> str:
@@ -167,15 +165,17 @@ def main() -> None:
 
     feature_counts = [2, 3, 4]
 
-    if not os.path.exists("../fitness_analysis/features.toml"):
+    parent_dir = pathlib.Path(__file__).parent
+
+    if not (parent_dir.parent / 'fitness_analysis' / 'features.toml').exists():
         get_features.main([1] + feature_counts)
 
-    with open('../fitness_analysis/features.toml', 'rb') as f:
+    with open(parent_dir.parent / 'fitness_analysis' / 'features.toml', 'rb') as f:
         features: dict = tomli.load(f)["features"]
 
     current_features: list[dict] = [features[str(feature_count)] for feature_count in feature_counts]
 
-    message: list[str] = read_message('../encrypt/message.txt', alphabet)
+    message: list[str] = read_message(parent_dir.parent / 'encrypt' / 'message.txt', alphabet)
 
     if len(message) > 100:
         message = random.sample(message, 100)
@@ -187,7 +187,7 @@ def main() -> None:
     print(f'{decrypting_key = }')
     print(f'{encrypting_key = }')
 
-    decrypt.decrypt(decrypting_key, '../encrypt/message.txt', '../fitness_analysis/correct.txt', alphabet)
+    decrypt.decrypt(decrypting_key, parent_dir.parent / 'encrypt' / 'message.txt', parent_dir.parent / 'fitness_analysis' / 'correct.txt', alphabet)
 
 
 if __name__ == "__main__":

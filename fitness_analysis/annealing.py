@@ -3,9 +3,8 @@ import math
 import decrypt
 import tomli
 import os
-import sys
+import pathlib
 
-sys.path.insert(1, '../bananagrams')
 import bananagrams.decrypt as bananagrams
 
 
@@ -55,18 +54,19 @@ def optimize(single_letter_features: dict, features: list[dict], feature_counts:
 
 def main() -> None:
     alphabet = "abcdefghijklmnopqrstuvwxyz"
-
     feature_counts = [2, 3, 4]
 
-    if not os.path.exists("../fitness_analysis/features.toml"):
+    parent_dir = pathlib.Path(__file__).parent
+
+    if not (parent_dir.parent / "fitness_analysis" / "features.toml").exists():
         decrypt.get_features.main([1] + feature_counts)
 
-    with open('../fitness_analysis/features.toml', 'rb') as f:
+    with open(parent_dir.parent / "fitness_analysis" / "features.toml", 'rb') as f:
         features: dict = tomli.load(f)["features"]
 
     current_features: list[dict] = [features[str(feature_count)] for feature_count in feature_counts]
 
-    message: list[str] = decrypt.read_message('../encrypt/message.txt', alphabet)
+    message: list[str] = decrypt.read_message(parent_dir.parent / "encrypt" / "message.txt", alphabet)
 
     if len(message) > 100:
         message = random.sample(message, 100)
@@ -75,7 +75,7 @@ def main() -> None:
     encrypting_key = bananagrams.invert_key(decrypting_key, alphabet)
     print(f'{decrypting_key = }')
     print(f'{encrypting_key = }')
-    bananagrams.decrypt(decrypting_key, '../encrypt/message.txt', '../fitness_analysis/correct.txt', alphabet)
+    bananagrams.decrypt(decrypting_key, parent_dir.parent / "encrypt" / "message.txt", parent_dir.parent / "fitness_analysis" / "correct.txt", alphabet)
 
 
 if __name__ == "__main__":

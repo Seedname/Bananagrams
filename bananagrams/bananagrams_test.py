@@ -1,7 +1,11 @@
+import pathlib
+
 dictionary = {}
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
-with open('../bananagrams/dictionary.txt', 'r') as f:
+parent_dir = pathlib.Path(__file__).parent
+
+with open(parent_dir.parent / "bananagrams" / "dictionary.txt", 'r') as f:
     for pair in f.readlines():
         pattern, word = pair.strip().split(" ")
         if not dictionary.get(pattern):

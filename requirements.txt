@@ -1,0 +1,3 @@
+tomli_w
+matplotlib
+scipy

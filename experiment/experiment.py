@@ -6,9 +6,8 @@ import tomli_w
 import matplotlib.pyplot as plt
 import random
 import statistics
+import pathlib
 
-sys.path.insert(1, '../fitness_analysis')
-sys.path.insert(1, '../bananagrams')
 
 import fitness_analysis.decrypt as fitness
 import bananagrams.decrypt as bananagrams
@@ -25,9 +24,11 @@ def inverted_normalized_hamming_distance(test_key: str, real_key: str) -> float:
 def fitness_analysis_runner(real_key: str):
     alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-    message = fitness.read_message('../encrypt/message.txt', alphabet)
+    parent_dir = pathlib.Path(__file__).parent
 
-    with open('../fitness_analysis/features.toml', 'rb') as f:
+    message = fitness.read_message(parent_dir.parent / "encrypt" / "message.txt", alphabet)
+
+    with open(parent_dir.parent / "fitness_analysis" / "features.toml", 'rb') as f:
         features: dict = tomli.load(f)["features"]
 
     feature_counts = [2, 3, 4]
@@ -65,7 +66,7 @@ def fitness_analysis_runner(real_key: str):
         remaining_time = (elapsed_time / curr_num) * (times - curr_num)
         print(f"Experiment {curr_num}/{times} ---- Time remaining: {remaining_time / 60:.2f} minutes")
 
-    with open('fitness_analysis.toml', 'wb') as f:
+    with open(parent_dir / 'fitness_analysis.toml', 'wb') as f:
         tomli_w.dump({"n": times,
                       "runtimes": runtimes,
                       "accuracies": accuracies,
@@ -78,9 +79,10 @@ def fitness_analysis_runner(real_key: str):
 
 def bananagrams_runner(real_key: str):
     alphabet = "abcdefghijklmnopqrstuvwxyz"
+    parent_dir = pathlib.Path(__file__).parent
 
-    message = fitness.read_message('../encrypt/message.txt', alphabet)
-    dictionary = bananagrams.create_dictionary('../bananagrams/dictionary.txt')
+    message = fitness.read_message(parent_dir.parent / "encrypt" / "message.txt", alphabet)
+    dictionary = bananagrams.create_dictionary(parent_dir.parent / "bananagrams" / "dictionary.txt")
     threshold = 1
 
     start_length = 20
@@ -126,7 +128,7 @@ def bananagrams_runner(real_key: str):
         remaining_time = (elapsed_time / curr_num) * (times - curr_num)
         print(f"Experiment {curr_num}/{times} ---- Time remaining: {remaining_time / 60:.2f} minutes")
 
-    with open('bananagrams.toml', 'wb') as f:
+    with open(parent_dir / 'bananagrams.toml', 'wb') as f:
         tomli_w.dump({"n": times,
                       "runtimes": runtimes,
                       "accuracies": accuracies}, f)

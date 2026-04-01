@@ -2,7 +2,7 @@ import tomli
 import matplotlib.pyplot as plt
 from regression import inverse_regression
 from scipy.optimize import curve_fit
-import math
+import pathlib
 
 def inverse(x, Beta_1, Beta_2):
     return Beta_1 / x ** Beta_2
@@ -19,7 +19,9 @@ if __name__ == "__main__":
     suppress_qt_warnings()
     
     print("Reading features...")
-    with open('../frequency_analysis/features.toml', 'rb') as f:
+    parent_dir = pathlib.Path(__file__).parent
+
+    with open(parent_dir.parent / 'frequency_analysis' / 'features.toml', 'rb') as f:
         features: list[dict] = tomli.load(f)["features"]
 
     for feature in features:

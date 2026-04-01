@@ -1,8 +1,15 @@
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
+
+from bananagrams.decrypt import invert_key
+import pathlib
+
 def decrypt(key):
     new_message = ""
-    correct = open('../bananagrams/correct.txt', 'w')
-    with open('../encrypt/message.txt', 'r') as f:
+
+    parent_dir = pathlib.Path(__file__).parent
+
+    correct = open(parent_dir.parent / 'bananagrams' / 'correct.txt', 'w')
+    with open(parent_dir.parent / 'encrypt' / 'message.txt', 'r') as f:
         lines = f.readlines()
         for line in lines:
             for letter in line:
@@ -14,6 +21,7 @@ def decrypt(key):
                 else:
                     new_message += letter
     correct.write(new_message)
-    
-key = 'sprgwhkxojzldcuvyemnbtiafq'
+
+key = 'presntdayimouhlfwkcvgbjqxz'
+# key = invert_key(key, alphabet=ALPHABET)
 decrypt(key)

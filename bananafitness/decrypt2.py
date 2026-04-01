@@ -1,13 +1,8 @@
-import sys
 import random
 import tomli
-
-sys.path.insert(1, '../fitness_analysis')
-sys.path.insert(1, '../bananagrams')
-
 import fitness_analysis.decrypt as fitness
 import bananagrams.decrypt as bananagrams
-
+import pathlib
 
 def generate_key_from_keyspace(keyspace: dict, alphabet: str) -> str:
     remaining_letters = [*alphabet]
@@ -45,10 +40,12 @@ def evolve_keyspace(keyspace: dict, alphabet: str, single_letter_features: dict,
 def main() -> None:
     alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-    dictionary = bananagrams.create_dictionary('../bananagrams/dictionary.txt')
-    message = bananagrams.read_message('../encrypt/message.txt', alphabet)
+    parent_dir = pathlib.Path(__file__).parent
 
-    with open('../fitness_analysis/features.toml', 'rb') as f:
+    dictionary = bananagrams.create_dictionary(parent_dir.parent / "bananagrams" / "dictionary.txt")
+    message = bananagrams.read_message(parent_dir.parent / "encrypt" / "message.txt", alphabet)
+
+    with open(parent_dir.parent / "fitness_analysis" / "features.toml", 'rb') as f:
         features: dict = tomli.load(f)["features"]
 
     feature_counts = [2, 3, 4]
@@ -71,7 +68,7 @@ def main() -> None:
             print("Absolute key found!")
             print(f'{decrypting_key = }')
             print(f'{encrypting_key = }')
-            bananagrams.decrypt(decrypting_key, '../encrypt/message.txt', '../bananafitness/correct.txt', alphabet)
+            bananagrams.decrypt(decrypting_key, parent_dir.parent / "encrypt" / "message.txt", parent_dir.parent / "bananafitness" / "correct.txt", alphabet)
             break
     else:
         print(f"Generating Keystrings from {keyspace_size:,} possible keys...")
@@ -80,7 +77,7 @@ def main() -> None:
         encrypting_key = bananagrams.invert_key(decrypting_key, alphabet)
         print(f'{decrypting_key = }')
         print(f'{encrypting_key = }')
-        bananagrams.decrypt(decrypting_key, '../encrypt/message.txt', '../bananafitness/correct.txt', alphabet)
+        bananagrams.decrypt(decrypting_key, parent_dir.parent / "encrypt" / "message.txt", parent_dir.parent / "bananafitness" / "correct.txt", alphabet)
 
 
 if __name__ == "__main__":

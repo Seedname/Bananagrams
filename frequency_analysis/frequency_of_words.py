@@ -1,9 +1,8 @@
-import sys
 from get_features import filter_text
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-import math
 from regression import inverse_regression
+import pathlib
 
 def inverse(x, Beta_1, Beta_2):
     return Beta_1 / x ** Beta_2
@@ -12,8 +11,10 @@ def main() -> None:
     dictionary = {}
     ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
+    parent_dir = pathlib.Path(__file__).parent
+
     print("Creating Dictionary...")
-    with open('../frequency_analysis/dictionary.txt', 'r') as f:
+    with open(parent_dir.parent / 'frequency_analysis' / 'dictionary.txt', 'r') as f:
         for pair in f.readlines():
             pattern, word = pair.strip().split(" ")
             if not dictionary.get(pattern):
@@ -21,7 +22,7 @@ def main() -> None:
             dictionary[pattern].append(word)
 
     print("Formatting text...")
-    with open('../frequency_analysis/text.txt') as f:
+    with open(parent_dir.parent / 'frequency_analysis' / 'text.txt') as f:
         lines = f.readlines()
         message = filter_text(lines, dictionary, ALPHABET)
 

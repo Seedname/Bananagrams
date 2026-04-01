@@ -1,9 +1,7 @@
 import random
-import sys
-sys.path.insert(1, '../bananagrams')
 import bananagrams.decrypt as decrypt
 import time
-
+import pathlib
 
 def generate_random_key(alphabet: str) -> str:
     return ''.join(random.sample(alphabet, len(alphabet)))
@@ -25,8 +23,10 @@ def fitness(key: str, dictionary: dict, message: list[str], alphabet: str) -> in
 class Evolution:
     def __init__(self, pop_size: int) -> None:
         self.alphabet = "abcdefghijklmnopqrstuvwxyz"
-        self.dictionary = decrypt.create_dictionary('../bananagrams/dictionary.txt')
-        self.message = decrypt.read_message('../encrypt/message.txt', self.alphabet)
+        parent_dir = pathlib.Path(__file__).parent
+
+        self.dictionary = decrypt.create_dictionary(parent_dir.parent / "bananagrams" / "dictionary.txt")
+        self.message = decrypt.read_message(parent_dir.parent / "encrypt" / "message.txt", self.alphabet)
 
         self.pop_size = pop_size
         self.population = [generate_random_key(self.alphabet) for _ in range(pop_size)]

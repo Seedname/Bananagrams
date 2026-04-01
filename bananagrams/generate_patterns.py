@@ -1,3 +1,5 @@
+import pathlib
+
 def get_pattern(word: str, alphabet: str) -> str:
     mapping = {}
     for letter in word:
@@ -14,9 +16,11 @@ def get_pattern(word: str, alphabet: str) -> str:
 if __name__ == "__main__":
     alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-    with open('../bananagrams/no_pattern.txt', 'r') as f:
+    parent_dir = pathlib.Path(__file__).parent
+
+    with open(parent_dir.parent / "bananagrams" / "no_pattern.txt", 'r') as f:
         lines = [line.strip().lower() for line in f.readlines()]
 
-    with open('../bananagrams/dictionary.txt', 'w') as f:
+    with open(parent_dir.parent / "bananagrams" / "dictionary.txt", 'w') as f:
         for word in lines:
             f.write(f'{get_pattern(word, alphabet)} {word}\n')

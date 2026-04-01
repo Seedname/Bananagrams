@@ -1,5 +1,5 @@
 import tomli_w
-
+import pathlib
 
 def filter_text(lines: list[str], dictionary: dict, alphabet: str,
                 enforce_dict: bool = False) -> list[str]:
@@ -60,8 +60,10 @@ def main(feature_range) -> None:
     prefixes = ["mono", "di", "tri", "quad", "penta", "hexa",
                 "septa", "octa", "nona", "deca"]
 
+    parent_dir = pathlib.Path(__file__).parent
+
     print("Creating Dictionary...")
-    with open('../frequency_analysis/dictionary.txt', 'r') as f:
+    with open(parent_dir.parent / 'frequency_analysis' / 'dictionary.txt', 'r') as f:
         for pair in f.readlines():
             pattern, word = pair.strip().split(" ")
             if not dictionary.get(pattern):
@@ -70,7 +72,7 @@ def main(feature_range) -> None:
 
     features = {}
     print("Formatting text...")
-    with open('../frequency_analysis/text.txt') as f:
+    with open(parent_dir.parent / 'frequency_analysis' / 'text.txt') as f:
         lines = f.readlines()
         text = filter_text(lines, dictionary, ALPHABET)
 
@@ -89,7 +91,7 @@ def main(feature_range) -> None:
         feature_dict = dict(sorted(feature_dict.items(), key=lambda x: x[1], reverse=True))
         features[str(count)] = feature_dict
 
-    with open("../fitness_analysis/features.toml", 'wb') as f:
+    with open(parent_dir.parent / 'fitness_analysis' / 'features.toml', 'wb') as f:
         tomli_w.dump({"features": features}, f)
 
 
